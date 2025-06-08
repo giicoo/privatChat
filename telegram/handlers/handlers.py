@@ -127,6 +127,7 @@ async def admin_reply_handler(message: Message, bot: Bot):
         
         if 'UserID:' not in original_text:
             await message.answer("⚠️ Это анонимное обращение, ответ невозможен")
+            return
 
         if '#' not in original_text:
             return  # не обращение
