@@ -17,7 +17,7 @@ async def schedule_album_send(bot, group_id):
         # Очистить буфер
         del media_groups_buffer[group_id]
 
-async def forward_to_admins(bot: Bot, message, user_data):
+async def forward_to_admins(bot: Bot, message, user_data, color):
     
     try:
         if message.media_group_id:
@@ -39,25 +39,25 @@ async def forward_to_admins(bot: Bot, message, user_data):
 
             # Запускаем таймер, если ещё не запущен
             if media_groups_buffer[group_id]["timer_task"] is None:
-                media_groups_buffer[group_id]["timer_task"] = asyncio.create_task(schedule_album_send(bot, group_id))
+                media_groups_buffer[group_id]["timer_task"] = asyncio.create_task(schedule_album_send(bot, group_id, color))
 
             return True
 
         # Если обычное сообщение с фото (одиночное)
         if message.photo:
-            await _send_photo(bot, message, user_data)
+            await _send_photo(bot, message, user_data, color)
             return True
 
         # Просто текст
         if message.text:
-            await _send_text(bot, message, user_data)
+            await _send_text(bot, message, user_data, color)
             return True
 
     except Exception as e:
         logger.error(f"Ошибка пересылки админам: {e}")
         return False
 
-async def _send_album(bot: Bot, album_data):
+async def _send_album(bot: Bot, album_data, color):
     try:
         tg_id = album_data["user_data"]['tg_id']
         category = album_data["user_data"]['category']
@@ -67,7 +67,7 @@ async def _send_album(bot: Bot, album_data):
         photos = album_data["photos"]
         text = album_data["text"]
 
-        trust_color = "⚫"
+        trust_color = color or "⚫"
         msg_text = f"#{message_db_id} {trust_color} Категория: {category}\n{text}"
         
 
@@ -94,13 +94,14 @@ async def _send_album(bot: Bot, album_data):
     except Exception as e:
         logger.error(f"_send_album: {e}")
 
-async def _send_photo(bot: Bot, message, user_data):
+async def _send_photo(bot: Bot, message, user_data, color):
     tg_id = user_data['tg_id']
     category = user_data['category']
     anonymous = user_data['anonymous']
     message_db_id = user_data['message_db_id']
     caption = message.caption or ""
-    trust_color = "⚫" #TODO:vхуйня
+    
+    trust_color = color or "⚫"
     msg_text = f"#{message_db_id} {trust_color} Категория: {category}\n{caption}"
 
     if anonymous:
@@ -116,12 +117,12 @@ async def _send_photo(bot: Bot, message, user_data):
     )
     return True
 
-async def _send_text(bot: Bot, message, user_data):
+async def _send_text(bot: Bot, message, user_data, color):
     tg_id = user_data['tg_id']
     category = user_data['category']
     anonymous = user_data['anonymous']
     message_db_id = user_data['message_db_id']
-    trust_color =  "⚫"
+    trust_color =  color or "⚫"
 
     msg_text = f"#{message_db_id} {trust_color} Категория: {category}\n{message.text}"
 

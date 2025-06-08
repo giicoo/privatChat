@@ -97,7 +97,18 @@ async def submit_appeal_handler(message: Message, state: FSMContext, bot: Bot):
                                            text=message_text))
         user_data = await state.update_data(message_db_id=message_db_id)
     
-    if await forward_to_admins(bot, message, user_data):
+    color = None
+    if not user_data["anonymous"]:
+        user = await repo.get_user_by_id(message.from_user.id)
+        if user.trust < 5:
+            color = "🟢"
+        elif user.trust >= 5 and user.trust < 10:
+            color = "🟡"
+        else:
+            color = "🔴"
+    
+
+    if await forward_to_admins(bot, message, user_data, color):
         if not (message.text or message.caption):
         # Игнорируем если нет текста или подписи (потому что если альбом то фотки отдельно сюда прилетают)
             return

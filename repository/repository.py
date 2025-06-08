@@ -25,3 +25,10 @@ class Repository:
         async with self.session_maker() as session:
             result = await session.execute(select(MessageModel).filter_by(id=id))
             return result.scalar_one_or_none()
+        
+    async def get_user_by_id(self, tg_id: int) -> UserModel:
+        async with self.session_maker() as session:
+            result = await session.execute(select(UserModel).filter_by(tg_id=tg_id))
+            return result.scalar_one_or_none()
+
+
