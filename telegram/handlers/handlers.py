@@ -34,10 +34,13 @@ async def handle_message_not_reply(message: Message):
 
 @router.message((F.text == "/start") & ~F.chat.type.in_({"group", "supergroup"}))
 async def start_handler(message: Message, state: FSMContext):
-    await repo.create_user(UserModel(tg_id=message.from_user.id,
-                                     tg_name=message.from_user.full_name,
-                                     trust=0,
-                                    ))
+    try:
+        await repo.create_user(UserModel(tg_id=message.from_user.id,
+                                        tg_name=message.from_user.full_name,
+                                        trust=0,
+                                        ))
+    except:
+        pass
     await state.update_data(tg_id=message.from_user.id, anonymous=False)
     await go_to_main_menu(message, state)
 
